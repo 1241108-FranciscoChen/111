@@ -1,0 +1,78 @@
+import javax.imageio.ImageIO;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+
+public class ImageToMatrix {
+    public static void main(String[] args) {
+        // Path to your images
+        String[] imageFiles = {
+                "faces_dataset/image_011.png",
+                "faces_dataset/image_021.png",
+                "faces_dataset/image_031.png"
+        };
+
+        // Desired width and height
+        int targetWidth = 100;
+        int targetHeight = 100;
+
+        // Loop through each image in the dataset
+        for (String imagePath : imageFiles) {
+            try {
+                // Load the image
+                File imageFile = new File(imagePath);
+                BufferedImage image = ImageIO.read(imageFile);
+
+                // Resize the image to 100x100
+                Image resizedImage = image.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+                BufferedImage bufferedResizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+                bufferedResizedImage.getGraphics().drawImage(resizedImage, 0, 0, null);
+
+                // Get image dimensions after resizing
+                int width = bufferedResizedImage.getWidth();
+                int height = bufferedResizedImage.getHeight();
+
+                // Initialize a vector (1D array) to hold the pixel values
+                int[] imageVector = new int[width * height];
+
+                // Loop through every pixel and convert to grayscale
+                int index = 0;
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        int pixel = bufferedResizedImage.getRGB(x, y);  // Get pixel value
+
+                        // Convert the pixel to grayscale (optional)
+                        int red = (pixel >> 16) & 0xff;
+                        int green = (pixel >> 8) & 0xff;
+                        int blue = pixel & 0xff;
+
+                        // Grayscale value (average of RGB components)
+                        int grayscale = (red + green + blue) / 3;
+
+                        // Store the grayscale value in the vector
+                        imageVector[index++] = grayscale;
+                    }
+                }
+
+                // Print the vector representation of the image (flattened)
+                System.out.println("Image: " + imagePath + " as Vector:");
+
+                // Print the image vector in chunks (e.g., 10 values per line)
+                int chunkSize = 10;  // Number of values per line
+                for (int i = 0; i < imageVector.length; i++) {
+                    System.out.print(imageVector[i] + " ");
+                    // Print a new line after every 'chunkSize' values
+                    if ((i + 1) % chunkSize == 0) {
+                        System.out.println();  // New line
+                    }
+                }
+                System.out.println();  // Extra line after each image vector
+            } catch (IOException e) {
+                System.out.println("Error reading image: " + imagePath);
+                e.printStackTrace();
+            }
+        }
+    }
+}
